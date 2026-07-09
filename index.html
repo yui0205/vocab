@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="单词本">
+<meta name="theme-color" content="#1a1a2e">
+<title>英语单词本</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",sans-serif;background:#1a1a2e;color:#fff;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.hdr{padding:14px 16px 10px;flex-shrink:0}
+.hdr h1{font-size:18px;font-weight:700}
+.prog-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.prog-track{flex:1;height:4px;background:#2a2a4a;border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#e94560,#f39c12);width:0%;transition:width .4s;border-radius:4px}
+.prog-txt{font-size:11px;color:#666;white-space:nowrap}
+.tabs{display:flex;overflow-x:auto;gap:8px;padding:10px 12px;flex-shrink:0;background:#0d0d1a;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:6px 14px;border-radius:16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#2a2a4a;color:#888;transition:all .2s}
+.tab.active{background:#e94560;color:#fff}
+.main{flex:1;overflow:hidden;position:relative}
+#listView{height:100%;overflow-y:auto;padding:8px 12px 20px;scrollbar-width:none}
+#listView::-webkit-scrollbar{display:none}
+.wi{background:#16213e;border-radius:12px;padding:13px 12px;margin-bottom:9px;border-left:3px solid transparent;cursor:pointer;user-select:none}
+.wi.mastered{border-left-color:#27ae60;background:#0d1f10}
+.wi.learning{border-left-color:#f39c12;background:#1e1800}
+.wi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.wi-l{flex:1}
+.wi-en{font-size:18px;font-weight:700}
+.wi-ph{font-size:11px;color:#555;margin-top:2px;font-style:italic}
+.wi-zh{font-size:14px;color:#e94560;font-weight:600;margin-top:5px}
+.wi-r{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex-shrink:0}
+.wi-badge{font-size:10px;background:#2a2a4a;color:#666;padding:2px 8px;border-radius:8px}
+.wi-btn{width:28px;height:28px;border-radius:50%;border:2px solid #333;background:transparent;color:#555;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.wi.mastered .wi-btn{background:#27ae60;border-color:#27ae60;color:#fff}
+.wi.learning .wi-btn{background:#f39c12;border-color:#f39c12;color:#fff}
+.wi-ex{display:none;margin-top:10px;padding-top:9px;border-top:1px dashed #2a2a4a;font-size:12px;line-height:1.6}
+.wi.open .wi-ex{display:block}
+.wi-ex-en{color:#888}
+.wi-ex-zh{color:#555;margin-top:2px}
+#cardView{height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px 20px;gap:14px}
+#cardView.show{display:flex}
+.card-counter{font-size:13px;color:#555}
+.card-wrap{width:100%;max-width:380px;cursor:pointer;perspective:1000px}
+.card-inner{width:100%;aspect-ratio:16/10;position:relative;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1)}
+.card-wrap.flipped .card-inner{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;border-radius:20px;padding:28px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:center}
+.card-front{background:linear-gradient(135deg,#16213e,#0f3460)}
+.card-back{background:linear-gradient(135deg,#0f3460,#16213e);transform:rotateY(180deg)}
+.card-en{font-size:30px;font-weight:800}
+.card-ph{font-size:13px;color:#666;margin-top:6px;font-style:italic}
+.card-badge{margin-top:10px;padding:3px 12px;border:1px solid #e9456044;border-radius:12px;font-size:11px;color:#e94560}
+.card-hint{font-size:12px;color:#333;margin-top:16px}
+.card-zh{font-size:26px;font-weight:700;color:#e94560}
+.card-en-sm{font-size:15px;color:#555;margin-top:6px}
+.card-exbox{margin-top:14px;padding-top:12px;border-top:1px solid #2a2a4a;width:100%}
+.card-ex-en{font-size:12px;color:#888;line-height:1.5}
+.card-ex-zh{font-size:11px;color:#555;margin-top:3px}
+.card-actions{display:flex;gap:10px;width:100%;max-width:380px}
+.cta{flex:1;padding:13px 6px;border-radius:14px;border:none;font-size:14px;font-weight:700;cursor:pointer}
+.cta:active{opacity:.7}
+.cta-skip{background:#2a2a4a;color:#666}
+.cta-learning{background:transparent;color:#f39c12;border:2px solid #f39c12}
+.cta-mastered{background:transparent;color:#27ae60;border:2px solid #27ae60}
+.card-nav{display:flex;gap:10px}
+.cnav{padding:8px 20px;background:#2a2a4a;border:none;border-radius:10px;color:#666;font-size:13px;cursor:pointer}
+.cnav:active{background:#333}
+.bnav{display:flex;background:#0d0d1a;border-top:1px solid #1e1e3a;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0px)}
+.bni{flex:1;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:transparent;color:#444;transition:color .2s}
+.bni.active{color:#e94560}
+.bni-icon{font-size:20px;line-height:1}
+.bni-lbl{font-size:10px;font-weight:600}
+.fab{position:fixed;bottom:70px;right:18px;width:52px;height:52px;border-radius:50%;background:#e94560;border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 4px 16px rgba(233,69,96,.5);z-index:100;display:flex;align-items:center;justify-content:center}
+.fab:active{transform:scale(.92)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end}
+.overlay.open{display:flex}
+.panel{background:#16213e;border-radius:20px 20px 0 0;padding:20px 20px 32px;width:100%;max-height:85vh;overflow-y:auto}
+.panel h2{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between}
+.panel h2 span{font-size:22px;cursor:pointer;color:#555}
+.fld{margin-bottom:12px}
+.fld label{font-size:12px;color:#888;display:block;margin-bottom:5px}
+.fld input,.fld select{width:100%;padding:11px 12px;background:#0d0d1a;border:1px solid #2a2a4a;border-radius:10px;color:#fff;font-size:15px;outline:none}
+.fld input:focus{border-color:#e94560}
+.save-btn{width:100%;padding:14px;background:#e94560;border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:4px}
+.custom-hdr{font-size:13px;color:#e94560;font-weight:700;padding:8px 4px 8px;border-bottom:1px solid #e9456033;margin-bottom:8px}
+.empty-tip{font-size:13px;color:#333;padding:16px 4px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>📖 单词本</h1>
+  <div class="prog-row">
+    <div class="prog-track"><div class="prog-fill" id="pf"></div></div>
+    <div class="prog-txt" id="pt">0/76</div>
+  </div>
+</div>
+
+<div class="tabs" id="tabBar">
+<button class="tab active" data-cat="all">🌟 全部</button>
+<button class="tab" data-cat="greeting">👋 问候社交</button>
+<button class="tab" data-cat="work">💼 职场工作</button>
+<button class="tab" data-cat="communication">💬 沟通表达</button>
+<button class="tab" data-cat="time">⏰ 时间频率</button>
+<button class="tab" data-cat="email">📧 邮件文件</button>
+<button class="tab" data-cat="numbers">🔢 数字数量</button>
+<button class="tab" data-cat="daily">🏙 日常生活</button>
+<button class="tab" data-cat="phrases">💡 实用短句</button>
+</div>
+
+<div class="main">
+  <div id="listView">
+    <div style="padding:0 0 4px">
+      <div class="custom-hdr">⭐ 我的单词</div>
+      <div id="myWords"><div class="empty-tip">还没有自定义单词，点右下角 + 添加</div></div>
+    </div>
+    <div class="wi" id="li0" data-cat="greeting" data-id="0"><div class="wi-top"><div class="wi-l"><div class="wi-en">Hello</div><div class="wi-ph">/həˈloʊ/</div><div class="wi-zh">你好</div></div><div class="wi-r"><span class="wi-badge">感叹词</span><button class="wi-btn" id="btn0" data-id="0">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Hello! Nice to meet you.</div><div class="wi-ex-zh">你好！很高兴见到你。</div></div></div>
+<div class="wi" id="li1" data-cat="greeting" data-id="1"><div class="wi-top"><div class="wi-l"><div class="wi-en">Thank you</div><div class="wi-ph">/θæŋk juː/</div><div class="wi-zh">谢谢</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn1" data-id="1">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Thank you for your help.</div><div class="wi-ex-zh">谢谢你的帮助。</div></div></div>
+<div class="wi" id="li2" data-cat="greeting" data-id="2"><div class="wi-top"><div class="wi-l"><div class="wi-en">Sorry</div><div class="wi-ph">/ˈsɒri/</div><div class="wi-zh">对不起</div></div><div class="wi-r"><span class="wi-badge">感叹词</span><button class="wi-btn" id="btn2" data-id="2">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Sorry, I did not mean that.</div><div class="wi-ex-zh">对不起，我不是那个意思。</div></div></div>
+<div class="wi" id="li3" data-cat="greeting" data-id="3"><div class="wi-top"><div class="wi-l"><div class="wi-en">Please</div><div class="wi-ph">/pliːz/</div><div class="wi-zh">请</div></div><div class="wi-r"><span class="wi-badge">副词</span><button class="wi-btn" id="btn3" data-id="3">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please wait a moment.</div><div class="wi-ex-zh">请稍等一下。</div></div></div>
+<div class="wi" id="li4" data-cat="greeting" data-id="4"><div class="wi-top"><div class="wi-l"><div class="wi-en">Excuse me</div><div class="wi-ph">/ɪkˈskjuːz miː/</div><div class="wi-zh">打扰一下</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn4" data-id="4">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Excuse me, where is the restroom?</div><div class="wi-ex-zh">打扰一下，洗手间在哪里？</div></div></div>
+<div class="wi" id="li5" data-cat="greeting" data-id="5"><div class="wi-top"><div class="wi-l"><div class="wi-en">Welcome</div><div class="wi-ph">/ˈwelkəm/</div><div class="wi-zh">欢迎</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn5" data-id="5">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Welcome to our team!</div><div class="wi-ex-zh">欢迎加入我们团队！</div></div></div>
+<div class="wi" id="li6" data-cat="greeting" data-id="6"><div class="wi-top"><div class="wi-l"><div class="wi-en">Goodbye</div><div class="wi-ph">/ˌɡʊdˈbaɪ/</div><div class="wi-zh">再见</div></div><div class="wi-r"><span class="wi-badge">感叹词</span><button class="wi-btn" id="btn6" data-id="6">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Goodbye, see you tomorrow.</div><div class="wi-ex-zh">再见，明天见。</div></div></div>
+<div class="wi" id="li7" data-cat="greeting" data-id="7"><div class="wi-top"><div class="wi-l"><div class="wi-en">Congratulations</div><div class="wi-ph">/kənˌɡrætʃuˈleɪʃənz/</div><div class="wi-zh">恭喜</div></div><div class="wi-r"><span class="wi-badge">感叹词</span><button class="wi-btn" id="btn7" data-id="7">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Congratulations on your promotion!</div><div class="wi-ex-zh">恭喜你晋升！</div></div></div>
+<div class="wi" id="li8" data-cat="work" data-id="8"><div class="wi-top"><div class="wi-l"><div class="wi-en">Meeting</div><div class="wi-ph">/ˈmiːtɪŋ/</div><div class="wi-zh">会议</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn8" data-id="8">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 We have a meeting at 3 PM.</div><div class="wi-ex-zh">我们下午3点有个会议。</div></div></div>
+<div class="wi" id="li9" data-cat="work" data-id="9"><div class="wi-top"><div class="wi-l"><div class="wi-en">Deadline</div><div class="wi-ph">/ˈdedlaɪn/</div><div class="wi-zh">截止日期</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn9" data-id="9">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 The deadline is next Friday.</div><div class="wi-ex-zh">截止日期是下周五。</div></div></div>
+<div class="wi" id="li10" data-cat="work" data-id="10"><div class="wi-top"><div class="wi-l"><div class="wi-en">Report</div><div class="wi-ph">/rɪˈpɔːrt/</div><div class="wi-zh">报告</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn10" data-id="10">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please submit your report by Monday.</div><div class="wi-ex-zh">请在周一前提交你的报告。</div></div></div>
+<div class="wi" id="li11" data-cat="work" data-id="11"><div class="wi-top"><div class="wi-l"><div class="wi-en">Schedule</div><div class="wi-ph">/ˈskedʒuːl/</div><div class="wi-zh">日程安排</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn11" data-id="11">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Let me check my schedule.</div><div class="wi-ex-zh">我看一下我的日程安排。</div></div></div>
+<div class="wi" id="li12" data-cat="work" data-id="12"><div class="wi-top"><div class="wi-l"><div class="wi-en">Project</div><div class="wi-ph">/ˈprɒdʒekt/</div><div class="wi-zh">项目</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn12" data-id="12">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 This project is very important.</div><div class="wi-ex-zh">这个项目非常重要。</div></div></div>
+<div class="wi" id="li13" data-cat="work" data-id="13"><div class="wi-top"><div class="wi-l"><div class="wi-en">Update</div><div class="wi-ph">/ˈʌpdeɪt/</div><div class="wi-zh">更新/汇报进展</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn13" data-id="13">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Can you update me on the progress?</div><div class="wi-ex-zh">能告诉我进展情况吗？</div></div></div>
+<div class="wi" id="li14" data-cat="work" data-id="14"><div class="wi-top"><div class="wi-l"><div class="wi-en">Confirm</div><div class="wi-ph">/kənˈfɜːrm/</div><div class="wi-zh">确认</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn14" data-id="14">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please confirm your attendance.</div><div class="wi-ex-zh">请确认你的出席情况。</div></div></div>
+<div class="wi" id="li15" data-cat="work" data-id="15"><div class="wi-top"><div class="wi-l"><div class="wi-en">Discuss</div><div class="wi-ph">/dɪˈskʌs/</div><div class="wi-zh">讨论</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn15" data-id="15">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Let us discuss this issue together.</div><div class="wi-ex-zh">我们一起讨论这个问题吧。</div></div></div>
+<div class="wi" id="li16" data-cat="work" data-id="16"><div class="wi-top"><div class="wi-l"><div class="wi-en">Approve</div><div class="wi-ph">/əˈpruːv/</div><div class="wi-zh">批准</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn16" data-id="16">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 The manager approved my request.</div><div class="wi-ex-zh">经理批准了我的申请。</div></div></div>
+<div class="wi" id="li17" data-cat="work" data-id="17"><div class="wi-top"><div class="wi-l"><div class="wi-en">Feedback</div><div class="wi-ph">/ˈfiːdbæk/</div><div class="wi-zh">反馈</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn17" data-id="17">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Do you have any feedback?</div><div class="wi-ex-zh">你有什么反馈吗？</div></div></div>
+<div class="wi" id="li18" data-cat="work" data-id="18"><div class="wi-top"><div class="wi-l"><div class="wi-en">Priority</div><div class="wi-ph">/praɪˈɒrɪti/</div><div class="wi-zh">优先级</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn18" data-id="18">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 This task is our top priority.</div><div class="wi-ex-zh">这个任务是我们的首要工作。</div></div></div>
+<div class="wi" id="li19" data-cat="work" data-id="19"><div class="wi-top"><div class="wi-l"><div class="wi-en">Colleague</div><div class="wi-ph">/ˈkɒliːɡ/</div><div class="wi-zh">同事</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn19" data-id="19">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 My colleagues are very helpful.</div><div class="wi-ex-zh">我的同事们都很乐于助人。</div></div></div>
+<div class="wi" id="li20" data-cat="communication" data-id="20"><div class="wi-top"><div class="wi-l"><div class="wi-en">Agree</div><div class="wi-ph">/əˈɡriː/</div><div class="wi-zh">同意</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn20" data-id="20">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I agree with your suggestion.</div><div class="wi-ex-zh">我同意你的建议。</div></div></div>
+<div class="wi" id="li21" data-cat="communication" data-id="21"><div class="wi-top"><div class="wi-l"><div class="wi-en">Disagree</div><div class="wi-ph">/ˌdɪsəˈɡriː/</div><div class="wi-zh">不同意</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn21" data-id="21">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I disagree with this plan.</div><div class="wi-ex-zh">我不同意这个方案。</div></div></div>
+<div class="wi" id="li22" data-cat="communication" data-id="22"><div class="wi-top"><div class="wi-l"><div class="wi-en">Suggest</div><div class="wi-ph">/səˈdʒest/</div><div class="wi-zh">建议</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn22" data-id="22">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I suggest we try a different approach.</div><div class="wi-ex-zh">我建议我们尝试不同的方法。</div></div></div>
+<div class="wi" id="li23" data-cat="communication" data-id="23"><div class="wi-top"><div class="wi-l"><div class="wi-en">Explain</div><div class="wi-ph">/ɪkˈspleɪn/</div><div class="wi-zh">解释</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn23" data-id="23">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Could you explain this to me?</div><div class="wi-ex-zh">你能向我解释一下吗？</div></div></div>
+<div class="wi" id="li24" data-cat="communication" data-id="24"><div class="wi-top"><div class="wi-l"><div class="wi-en">Understand</div><div class="wi-ph">/ˌʌndəˈstænd/</div><div class="wi-zh">理解/明白</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn24" data-id="24">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I understand your concern.</div><div class="wi-ex-zh">我理解你的顾虑。</div></div></div>
+<div class="wi" id="li25" data-cat="communication" data-id="25"><div class="wi-top"><div class="wi-l"><div class="wi-en">Clarify</div><div class="wi-ph">/ˈklærɪfaɪ/</div><div class="wi-zh">说清楚</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn25" data-id="25">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Let me clarify what I mean.</div><div class="wi-ex-zh">让我说清楚我的意思。</div></div></div>
+<div class="wi" id="li26" data-cat="communication" data-id="26"><div class="wi-top"><div class="wi-l"><div class="wi-en">Mention</div><div class="wi-ph">/ˈmenʃən/</div><div class="wi-zh">提到</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn26" data-id="26">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 You mentioned this earlier.</div><div class="wi-ex-zh">你之前提到了这件事。</div></div></div>
+<div class="wi" id="li27" data-cat="communication" data-id="27"><div class="wi-top"><div class="wi-l"><div class="wi-en">Reply</div><div class="wi-ph">/rɪˈplaɪ/</div><div class="wi-zh">回复</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn27" data-id="27">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please reply to my email.</div><div class="wi-ex-zh">请回复我的邮件。</div></div></div>
+<div class="wi" id="li28" data-cat="communication" data-id="28"><div class="wi-top"><div class="wi-l"><div class="wi-en">Question</div><div class="wi-ph">/ˈkwestʃən/</div><div class="wi-zh">问题</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn28" data-id="28">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I have a question about this.</div><div class="wi-ex-zh">我对这个有个问题。</div></div></div>
+<div class="wi" id="li29" data-cat="communication" data-id="29"><div class="wi-top"><div class="wi-l"><div class="wi-en">Present</div><div class="wi-ph">/prɪˈzent/</div><div class="wi-zh">演示/呈现</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn29" data-id="29">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I will present the results tomorrow.</div><div class="wi-ex-zh">我明天将展示结果。</div></div></div>
+<div class="wi" id="li30" data-cat="time" data-id="30"><div class="wi-top"><div class="wi-l"><div class="wi-en">Today</div><div class="wi-ph">/təˈdeɪ/</div><div class="wi-zh">今天</div></div><div class="wi-r"><span class="wi-badge">副词</span><button class="wi-btn" id="btn30" data-id="30">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I will finish it today.</div><div class="wi-ex-zh">我今天会完成它。</div></div></div>
+<div class="wi" id="li31" data-cat="time" data-id="31"><div class="wi-top"><div class="wi-l"><div class="wi-en">Tomorrow</div><div class="wi-ph">/təˈmɒroʊ/</div><div class="wi-zh">明天</div></div><div class="wi-r"><span class="wi-badge">副词</span><button class="wi-btn" id="btn31" data-id="31">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Let us meet tomorrow morning.</div><div class="wi-ex-zh">我们明天早上见面吧。</div></div></div>
+<div class="wi" id="li32" data-cat="time" data-id="32"><div class="wi-top"><div class="wi-l"><div class="wi-en">Yesterday</div><div class="wi-ph">/ˈjestərdeɪ/</div><div class="wi-zh">昨天</div></div><div class="wi-r"><span class="wi-badge">副词</span><button class="wi-btn" id="btn32" data-id="32">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I sent the email yesterday.</div><div class="wi-ex-zh">我昨天发了邮件。</div></div></div>
+<div class="wi" id="li33" data-cat="time" data-id="33"><div class="wi-top"><div class="wi-l"><div class="wi-en">Urgent</div><div class="wi-ph">/ˈɜːrdʒənt/</div><div class="wi-zh">紧急的</div></div><div class="wi-r"><span class="wi-badge">形容词</span><button class="wi-btn" id="btn33" data-id="33">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 This is an urgent matter.</div><div class="wi-ex-zh">这是紧急事项。</div></div></div>
+<div class="wi" id="li34" data-cat="time" data-id="34"><div class="wi-top"><div class="wi-l"><div class="wi-en">Immediately</div><div class="wi-ph">/ɪˈmiːdiətli/</div><div class="wi-zh">立刻</div></div><div class="wi-r"><span class="wi-badge">副词</span><button class="wi-btn" id="btn34" data-id="34">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please respond immediately.</div><div class="wi-ex-zh">请立即回应。</div></div></div>
+<div class="wi" id="li35" data-cat="time" data-id="35"><div class="wi-top"><div class="wi-l"><div class="wi-en">Weekly</div><div class="wi-ph">/ˈwiːkli/</div><div class="wi-zh">每周</div></div><div class="wi-r"><span class="wi-badge">形容词</span><button class="wi-btn" id="btn35" data-id="35">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 We have weekly meetings.</div><div class="wi-ex-zh">我们每周开会。</div></div></div>
+<div class="wi" id="li36" data-cat="time" data-id="36"><div class="wi-top"><div class="wi-l"><div class="wi-en">Monthly</div><div class="wi-ph">/ˈmʌnθli/</div><div class="wi-zh">每月</div></div><div class="wi-r"><span class="wi-badge">形容词</span><button class="wi-btn" id="btn36" data-id="36">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 The report is due monthly.</div><div class="wi-ex-zh">报告每月提交一次。</div></div></div>
+<div class="wi" id="li37" data-cat="time" data-id="37"><div class="wi-top"><div class="wi-l"><div class="wi-en">Postpone</div><div class="wi-ph">/ˌpoʊstˈpoʊn/</div><div class="wi-zh">推迟</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn37" data-id="37">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 We need to postpone the meeting.</div><div class="wi-ex-zh">我们需要推迟会议。</div></div></div>
+<div class="wi" id="li38" data-cat="email" data-id="38"><div class="wi-top"><div class="wi-l"><div class="wi-en">Attachment</div><div class="wi-ph">/əˈtætʃmənt/</div><div class="wi-zh">附件</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn38" data-id="38">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please see the attachment.</div><div class="wi-ex-zh">请查看附件。</div></div></div>
+<div class="wi" id="li39" data-cat="email" data-id="39"><div class="wi-top"><div class="wi-l"><div class="wi-en">Forward</div><div class="wi-ph">/ˈfɔːrwərd/</div><div class="wi-zh">转发</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn39" data-id="39">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I will forward this email to you.</div><div class="wi-ex-zh">我会把这封邮件转发给你。</div></div></div>
+<div class="wi" id="li40" data-cat="email" data-id="40"><div class="wi-top"><div class="wi-l"><div class="wi-en">Draft</div><div class="wi-ph">/drɑːft/</div><div class="wi-zh">草稿/起草</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn40" data-id="40">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I drafted a proposal.</div><div class="wi-ex-zh">我起草了一份提案。</div></div></div>
+<div class="wi" id="li41" data-cat="email" data-id="41"><div class="wi-top"><div class="wi-l"><div class="wi-en">Document</div><div class="wi-ph">/ˈdɒkjumənt/</div><div class="wi-zh">文件/文档</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn41" data-id="41">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Can you share the document?</div><div class="wi-ex-zh">能把文件分享给我吗？</div></div></div>
+<div class="wi" id="li42" data-cat="email" data-id="42"><div class="wi-top"><div class="wi-l"><div class="wi-en">Signature</div><div class="wi-ph">/ˈsɪɡnɪtʃər/</div><div class="wi-zh">签名</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn42" data-id="42">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please add your signature here.</div><div class="wi-ex-zh">请在这里签名。</div></div></div>
+<div class="wi" id="li43" data-cat="email" data-id="43"><div class="wi-top"><div class="wi-l"><div class="wi-en">Regarding</div><div class="wi-ph">/rɪˈɡɑːrdɪŋ/</div><div class="wi-zh">关于</div></div><div class="wi-r"><span class="wi-badge">介词</span><button class="wi-btn" id="btn43" data-id="43">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Regarding your question...</div><div class="wi-ex-zh">关于你的问题……</div></div></div>
+<div class="wi" id="li44" data-cat="email" data-id="44"><div class="wi-top"><div class="wi-l"><div class="wi-en">Sincerely</div><div class="wi-ph">/sɪnˈsɪərli/</div><div class="wi-zh">诚挚地</div></div><div class="wi-r"><span class="wi-badge">副词</span><button class="wi-btn" id="btn44" data-id="44">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Sincerely, John</div><div class="wi-ex-zh">此致，约翰</div></div></div>
+<div class="wi" id="li45" data-cat="email" data-id="45"><div class="wi-top"><div class="wi-l"><div class="wi-en">Summarize</div><div class="wi-ph">/ˈsʌməraɪz/</div><div class="wi-zh">总结</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn45" data-id="45">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please summarize the key points.</div><div class="wi-ex-zh">请总结要点。</div></div></div>
+<div class="wi" id="li46" data-cat="numbers" data-id="46"><div class="wi-top"><div class="wi-l"><div class="wi-en">Increase</div><div class="wi-ph">/ɪnˈkriːs/</div><div class="wi-zh">增加</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn46" data-id="46">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Sales increased by 20 percent.</div><div class="wi-ex-zh">销售额增长了20%。</div></div></div>
+<div class="wi" id="li47" data-cat="numbers" data-id="47"><div class="wi-top"><div class="wi-l"><div class="wi-en">Decrease</div><div class="wi-ph">/dɪˈkriːs/</div><div class="wi-zh">减少</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn47" data-id="47">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Costs decreased this quarter.</div><div class="wi-ex-zh">本季度成本降低了。</div></div></div>
+<div class="wi" id="li48" data-cat="numbers" data-id="48"><div class="wi-top"><div class="wi-l"><div class="wi-en">Estimate</div><div class="wi-ph">/ˈestɪmət/</div><div class="wi-zh">估计/预估</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn48" data-id="48">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 My estimate is about 3 days.</div><div class="wi-ex-zh">我预估大约需要3天。</div></div></div>
+<div class="wi" id="li49" data-cat="numbers" data-id="49"><div class="wi-top"><div class="wi-l"><div class="wi-en">Percentage</div><div class="wi-ph">/pərˈsentɪdʒ/</div><div class="wi-zh">百分比</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn49" data-id="49">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 What percentage is complete?</div><div class="wi-ex-zh">完成了百分之多少？</div></div></div>
+<div class="wi" id="li50" data-cat="numbers" data-id="50"><div class="wi-top"><div class="wi-l"><div class="wi-en">Total</div><div class="wi-ph">/ˈtoʊtl/</div><div class="wi-zh">总计</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn50" data-id="50">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 The total cost is 500 dollars.</div><div class="wi-ex-zh">总费用是500美元。</div></div></div>
+<div class="wi" id="li51" data-cat="numbers" data-id="51"><div class="wi-top"><div class="wi-l"><div class="wi-en">Average</div><div class="wi-ph">/ˈævərɪdʒ/</div><div class="wi-zh">平均</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn51" data-id="51">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 The average score is 85.</div><div class="wi-ex-zh">平均分是85分。</div></div></div>
+<div class="wi" id="li52" data-cat="daily" data-id="52"><div class="wi-top"><div class="wi-l"><div class="wi-en">Breakfast</div><div class="wi-ph">/ˈbrekfəst/</div><div class="wi-zh">早餐</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn52" data-id="52">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I usually skip breakfast.</div><div class="wi-ex-zh">我通常不吃早餐。</div></div></div>
+<div class="wi" id="li53" data-cat="daily" data-id="53"><div class="wi-top"><div class="wi-l"><div class="wi-en">Lunch</div><div class="wi-ph">/lʌntʃ/</div><div class="wi-zh">午餐</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn53" data-id="53">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Let us have lunch together.</div><div class="wi-ex-zh">我们一起吃午饭吧。</div></div></div>
+<div class="wi" id="li54" data-cat="daily" data-id="54"><div class="wi-top"><div class="wi-l"><div class="wi-en">Dinner</div><div class="wi-ph">/ˈdɪnər/</div><div class="wi-zh">晚餐</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn54" data-id="54">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 What are you having for dinner?</div><div class="wi-ex-zh">你晚餐吃什么？</div></div></div>
+<div class="wi" id="li55" data-cat="daily" data-id="55"><div class="wi-top"><div class="wi-l"><div class="wi-en">Traffic</div><div class="wi-ph">/ˈtræfɪk/</div><div class="wi-zh">交通/堵车</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn55" data-id="55">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 The traffic was terrible today.</div><div class="wi-ex-zh">今天堵车很严重。</div></div></div>
+<div class="wi" id="li56" data-cat="daily" data-id="56"><div class="wi-top"><div class="wi-l"><div class="wi-en">Weather</div><div class="wi-ph">/ˈweðər/</div><div class="wi-zh">天气</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn56" data-id="56">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 The weather is nice today.</div><div class="wi-ex-zh">今天天气不错。</div></div></div>
+<div class="wi" id="li57" data-cat="daily" data-id="57"><div class="wi-top"><div class="wi-l"><div class="wi-en">Tired</div><div class="wi-ph">/ˈtaɪərd/</div><div class="wi-zh">累了</div></div><div class="wi-r"><span class="wi-badge">形容词</span><button class="wi-btn" id="btn57" data-id="57">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I am really tired today.</div><div class="wi-ex-zh">我今天真的很累。</div></div></div>
+<div class="wi" id="li58" data-cat="daily" data-id="58"><div class="wi-top"><div class="wi-l"><div class="wi-en">Busy</div><div class="wi-ph">/ˈbɪzi/</div><div class="wi-zh">忙碌的</div></div><div class="wi-r"><span class="wi-badge">形容词</span><button class="wi-btn" id="btn58" data-id="58">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I am a bit busy right now.</div><div class="wi-ex-zh">我现在有点忙。</div></div></div>
+<div class="wi" id="li59" data-cat="daily" data-id="59"><div class="wi-top"><div class="wi-l"><div class="wi-en">Available</div><div class="wi-ph">/əˈveɪləbl/</div><div class="wi-zh">有空的</div></div><div class="wi-r"><span class="wi-badge">形容词</span><button class="wi-btn" id="btn59" data-id="59">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Are you available this afternoon?</div><div class="wi-ex-zh">你今天下午有空吗？</div></div></div>
+<div class="wi" id="li60" data-cat="daily" data-id="60"><div class="wi-top"><div class="wi-l"><div class="wi-en">Help</div><div class="wi-ph">/help/</div><div class="wi-zh">帮助</div></div><div class="wi-r"><span class="wi-badge">动词</span><button class="wi-btn" id="btn60" data-id="60">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Can you help me with this?</div><div class="wi-ex-zh">你能帮我处理这个吗？</div></div></div>
+<div class="wi" id="li61" data-cat="daily" data-id="61"><div class="wi-top"><div class="wi-l"><div class="wi-en">Problem</div><div class="wi-ph">/ˈprɒbləm/</div><div class="wi-zh">问题/麻烦</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn61" data-id="61">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 There is a problem with the system.</div><div class="wi-ex-zh">系统出了个问题。</div></div></div>
+<div class="wi" id="li62" data-cat="daily" data-id="62"><div class="wi-top"><div class="wi-l"><div class="wi-en">Solution</div><div class="wi-ph">/səˈluːʃən/</div><div class="wi-zh">解决方案</div></div><div class="wi-r"><span class="wi-badge">名词</span><button class="wi-btn" id="btn62" data-id="62">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I found a solution.</div><div class="wi-ex-zh">我找到解决方法了。</div></div></div>
+<div class="wi" id="li63" data-cat="daily" data-id="63"><div class="wi-top"><div class="wi-l"><div class="wi-en">Important</div><div class="wi-ph">/ɪmˈpɔːrtənt/</div><div class="wi-zh">重要的</div></div><div class="wi-r"><span class="wi-badge">形容词</span><button class="wi-btn" id="btn63" data-id="63">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 This is very important.</div><div class="wi-ex-zh">这非常重要。</div></div></div>
+<div class="wi" id="li64" data-cat="phrases" data-id="64"><div class="wi-top"><div class="wi-l"><div class="wi-en">No problem</div><div class="wi-ph">/noʊ ˈprɒbləm/</div><div class="wi-zh">没问题</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn64" data-id="64">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Can you do this? No problem!</div><div class="wi-ex-zh">你能做这个吗？没问题！</div></div></div>
+<div class="wi" id="li65" data-cat="phrases" data-id="65"><div class="wi-top"><div class="wi-l"><div class="wi-en">Of course</div><div class="wi-ph">/əv kɔːrs/</div><div class="wi-zh">当然</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn65" data-id="65">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Of course, I will take care of it.</div><div class="wi-ex-zh">当然，我来处理。</div></div></div>
+<div class="wi" id="li66" data-cat="phrases" data-id="66"><div class="wi-top"><div class="wi-l"><div class="wi-en">I see</div><div class="wi-ph">/aɪ siː/</div><div class="wi-zh">我明白了</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn66" data-id="66">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I see, thank you for explaining.</div><div class="wi-ex-zh">我明白了，谢谢你的解释。</div></div></div>
+<div class="wi" id="li67" data-cat="phrases" data-id="67"><div class="wi-top"><div class="wi-l"><div class="wi-en">Let me know</div><div class="wi-ph">/let miː noʊ/</div><div class="wi-zh">告诉我</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn67" data-id="67">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Let me know if you need help.</div><div class="wi-ex-zh">如果需要帮助，告诉我。</div></div></div>
+<div class="wi" id="li68" data-cat="phrases" data-id="68"><div class="wi-top"><div class="wi-l"><div class="wi-en">Looking forward to</div><div class="wi-ph">/ˈlʊkɪŋ ˈfɔːrwərd tuː/</div><div class="wi-zh">期待</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn68" data-id="68">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Looking forward to your reply.</div><div class="wi-ex-zh">期待您的回复。</div></div></div>
+<div class="wi" id="li69" data-cat="phrases" data-id="69"><div class="wi-top"><div class="wi-l"><div class="wi-en">ASAP</div><div class="wi-ph">/eɪ es eɪ piː/</div><div class="wi-zh">尽快</div></div><div class="wi-r"><span class="wi-badge">缩写</span><button class="wi-btn" id="btn69" data-id="69">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Please reply ASAP.</div><div class="wi-ex-zh">请尽快回复。</div></div></div>
+<div class="wi" id="li70" data-cat="phrases" data-id="70"><div class="wi-top"><div class="wi-l"><div class="wi-en">By the way</div><div class="wi-ph">/baɪ ðə weɪ/</div><div class="wi-zh">顺便说一下</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn70" data-id="70">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 By the way, have you seen Mike?</div><div class="wi-ex-zh">顺便问一下，你见过Mike吗？</div></div></div>
+<div class="wi" id="li71" data-cat="phrases" data-id="71"><div class="wi-top"><div class="wi-l"><div class="wi-en">In other words</div><div class="wi-ph">/ɪn ˈʌðər wɜːrdz/</div><div class="wi-zh">换句话说</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn71" data-id="71">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 In other words, we need to restart.</div><div class="wi-ex-zh">换句话说，我们需要重新开始。</div></div></div>
+<div class="wi" id="li72" data-cat="phrases" data-id="72"><div class="wi-top"><div class="wi-l"><div class="wi-en">Make sense</div><div class="wi-ph">/meɪk sens/</div><div class="wi-zh">有道理</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn72" data-id="72">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Does this make sense to you?</div><div class="wi-ex-zh">这对你来说说得通吗？</div></div></div>
+<div class="wi" id="li73" data-cat="phrases" data-id="73"><div class="wi-top"><div class="wi-l"><div class="wi-en">Keep in touch</div><div class="wi-ph">/kiːp ɪn tʌtʃ/</div><div class="wi-zh">保持联系</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn73" data-id="73">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 Let us keep in touch.</div><div class="wi-ex-zh">保持联系哦。</div></div></div>
+<div class="wi" id="li74" data-cat="phrases" data-id="74"><div class="wi-top"><div class="wi-l"><div class="wi-en">Get back to you</div><div class="wi-ph">/ɡet bæk tuː juː/</div><div class="wi-zh">稍后回复你</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn74" data-id="74">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 I will get back to you by tomorrow.</div><div class="wi-ex-zh">我明天前回复你。</div></div></div>
+<div class="wi" id="li75" data-cat="phrases" data-id="75"><div class="wi-top"><div class="wi-l"><div class="wi-en">On the other hand</div><div class="wi-ph">/ɒn ðə ˈʌðər hænd/</div><div class="wi-zh">另一方面</div></div><div class="wi-r"><span class="wi-badge">短语</span><button class="wi-btn" id="btn75" data-id="75">○</button></div></div><div class="wi-ex"><div class="wi-ex-en">📝 On the other hand, this saves time.</div><div class="wi-ex-zh">另一方面，这样可以节省时间。</div></div></div>
+  </div>
+  <div id="cardView">
+    <div class="card-counter" id="cardCounter">1 / 76</div>
+    <div class="card-wrap" id="cardWrap">
+      <div class="card-inner" id="cardInner">
+        <div class="card-face card-front" id="cardFront">
+          <div class="card-en" id="cEn"></div>
+          <div class="card-ph" id="cPh"></div>
+          <div class="card-badge" id="cType"></div>
+          <div class="card-hint">点击翻转，查看中文</div>
+        </div>
+        <div class="card-face card-back" id="cardBack">
+          <div class="card-zh" id="cZh"></div>
+          <div class="card-en-sm" id="cEnSm"></div>
+          <div class="card-exbox">
+            <div class="card-ex-en" id="cExEn"></div>
+            <div class="card-ex-zh" id="cExZh"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-actions">
+      <button class="cta cta-skip" id="btnSkip">跳过</button>
+      <button class="cta cta-learning" id="btnLearning">学习中</button>
+      <button class="cta cta-mastered" id="btnMastered">已掌握 ✓</button>
+    </div>
+    <div class="card-nav">
+      <button class="cnav" id="btnPrev">‹ 上一个</button>
+      <button class="cnav" id="btnNext">下一个 ›</button>
+    </div>
+  </div>
+</div>
+
+<div class="bnav">
+  <button class="bni active" id="bniList">
+    <span class="bni-icon">📋</span><span class="bni-lbl">单词表</span>
+  </button>
+  <button class="bni" id="bniCard">
+    <span class="bni-icon">🃏</span><span class="bni-lbl">翻牌练习</span>
+  </button>
+</div>
+
+<button class="fab" id="fabBtn">＋</button>
+
+<div class="overlay" id="overlay">
+  <div class="panel">
+    <h2>添加单词 <span id="closePanel">✕</span></h2>
+    <div class="fld"><label>英文 *</label><input id="iEn" placeholder="negotiate" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"></div>
+    <div class="fld"><label>音标（选填）</label><input id="iPh" placeholder="/nɪˈɡoʊʃieɪt/" autocomplete="off"></div>
+    <div class="fld"><label>中文 *</label><input id="iZh" placeholder="谈判" autocomplete="off"></div>
+    <div class="fld"><label>词性</label><select id="iType"><option>动词</option><option>名词</option><option>形容词</option><option>副词</option><option>短语</option><option>其他</option></select></div>
+    <div class="fld"><label>例句（选填）</label><input id="iExEn" placeholder="Let us negotiate." autocomplete="off"></div>
+    <div class="fld"><label>例句中文（选填）</label><input id="iExZh" placeholder="我们来谈判吧。" autocomplete="off"></div>
+    <button class="save-btn" id="saveBtn">保存</button>
+  </div>
+</div>
+
+<script>
+var WORDS = [{"id": 0, "cat": "greeting", "en": "Hello", "ph": "/həˈloʊ/", "zh": "你好", "type": "感叹词", "ex_en": "Hello! Nice to meet you.", "ex_zh": "你好！很高兴见到你。"}, {"id": 1, "cat": "greeting", "en": "Thank you", "ph": "/θæŋk juː/", "zh": "谢谢", "type": "短语", "ex_en": "Thank you for your help.", "ex_zh": "谢谢你的帮助。"}, {"id": 2, "cat": "greeting", "en": "Sorry", "ph": "/ˈsɒri/", "zh": "对不起", "type": "感叹词", "ex_en": "Sorry, I did not mean that.", "ex_zh": "对不起，我不是那个意思。"}, {"id": 3, "cat": "greeting", "en": "Please", "ph": "/pliːz/", "zh": "请", "type": "副词", "ex_en": "Please wait a moment.", "ex_zh": "请稍等一下。"}, {"id": 4, "cat": "greeting", "en": "Excuse me", "ph": "/ɪkˈskjuːz miː/", "zh": "打扰一下", "type": "短语", "ex_en": "Excuse me, where is the restroom?", "ex_zh": "打扰一下，洗手间在哪里？"}, {"id": 5, "cat": "greeting", "en": "Welcome", "ph": "/ˈwelkəm/", "zh": "欢迎", "type": "动词", "ex_en": "Welcome to our team!", "ex_zh": "欢迎加入我们团队！"}, {"id": 6, "cat": "greeting", "en": "Goodbye", "ph": "/ˌɡʊdˈbaɪ/", "zh": "再见", "type": "感叹词", "ex_en": "Goodbye, see you tomorrow.", "ex_zh": "再见，明天见。"}, {"id": 7, "cat": "greeting", "en": "Congratulations", "ph": "/kənˌɡrætʃuˈleɪʃənz/", "zh": "恭喜", "type": "感叹词", "ex_en": "Congratulations on your promotion!", "ex_zh": "恭喜你晋升！"}, {"id": 8, "cat": "work", "en": "Meeting", "ph": "/ˈmiːtɪŋ/", "zh": "会议", "type": "名词", "ex_en": "We have a meeting at 3 PM.", "ex_zh": "我们下午3点有个会议。"}, {"id": 9, "cat": "work", "en": "Deadline", "ph": "/ˈdedlaɪn/", "zh": "截止日期", "type": "名词", "ex_en": "The deadline is next Friday.", "ex_zh": "截止日期是下周五。"}, {"id": 10, "cat": "work", "en": "Report", "ph": "/rɪˈpɔːrt/", "zh": "报告", "type": "名词", "ex_en": "Please submit your report by Monday.", "ex_zh": "请在周一前提交你的报告。"}, {"id": 11, "cat": "work", "en": "Schedule", "ph": "/ˈskedʒuːl/", "zh": "日程安排", "type": "名词", "ex_en": "Let me check my schedule.", "ex_zh": "我看一下我的日程安排。"}, {"id": 12, "cat": "work", "en": "Project", "ph": "/ˈprɒdʒekt/", "zh": "项目", "type": "名词", "ex_en": "This project is very important.", "ex_zh": "这个项目非常重要。"}, {"id": 13, "cat": "work", "en": "Update", "ph": "/ˈʌpdeɪt/", "zh": "更新/汇报进展", "type": "动词", "ex_en": "Can you update me on the progress?", "ex_zh": "能告诉我进展情况吗？"}, {"id": 14, "cat": "work", "en": "Confirm", "ph": "/kənˈfɜːrm/", "zh": "确认", "type": "动词", "ex_en": "Please confirm your attendance.", "ex_zh": "请确认你的出席情况。"}, {"id": 15, "cat": "work", "en": "Discuss", "ph": "/dɪˈskʌs/", "zh": "讨论", "type": "动词", "ex_en": "Let us discuss this issue together.", "ex_zh": "我们一起讨论这个问题吧。"}, {"id": 16, "cat": "work", "en": "Approve", "ph": "/əˈpruːv/", "zh": "批准", "type": "动词", "ex_en": "The manager approved my request.", "ex_zh": "经理批准了我的申请。"}, {"id": 17, "cat": "work", "en": "Feedback", "ph": "/ˈfiːdbæk/", "zh": "反馈", "type": "名词", "ex_en": "Do you have any feedback?", "ex_zh": "你有什么反馈吗？"}, {"id": 18, "cat": "work", "en": "Priority", "ph": "/praɪˈɒrɪti/", "zh": "优先级", "type": "名词", "ex_en": "This task is our top priority.", "ex_zh": "这个任务是我们的首要工作。"}, {"id": 19, "cat": "work", "en": "Colleague", "ph": "/ˈkɒliːɡ/", "zh": "同事", "type": "名词", "ex_en": "My colleagues are very helpful.", "ex_zh": "我的同事们都很乐于助人。"}, {"id": 20, "cat": "communication", "en": "Agree", "ph": "/əˈɡriː/", "zh": "同意", "type": "动词", "ex_en": "I agree with your suggestion.", "ex_zh": "我同意你的建议。"}, {"id": 21, "cat": "communication", "en": "Disagree", "ph": "/ˌdɪsəˈɡriː/", "zh": "不同意", "type": "动词", "ex_en": "I disagree with this plan.", "ex_zh": "我不同意这个方案。"}, {"id": 22, "cat": "communication", "en": "Suggest", "ph": "/səˈdʒest/", "zh": "建议", "type": "动词", "ex_en": "I suggest we try a different approach.", "ex_zh": "我建议我们尝试不同的方法。"}, {"id": 23, "cat": "communication", "en": "Explain", "ph": "/ɪkˈspleɪn/", "zh": "解释", "type": "动词", "ex_en": "Could you explain this to me?", "ex_zh": "你能向我解释一下吗？"}, {"id": 24, "cat": "communication", "en": "Understand", "ph": "/ˌʌndəˈstænd/", "zh": "理解/明白", "type": "动词", "ex_en": "I understand your concern.", "ex_zh": "我理解你的顾虑。"}, {"id": 25, "cat": "communication", "en": "Clarify", "ph": "/ˈklærɪfaɪ/", "zh": "说清楚", "type": "动词", "ex_en": "Let me clarify what I mean.", "ex_zh": "让我说清楚我的意思。"}, {"id": 26, "cat": "communication", "en": "Mention", "ph": "/ˈmenʃən/", "zh": "提到", "type": "动词", "ex_en": "You mentioned this earlier.", "ex_zh": "你之前提到了这件事。"}, {"id": 27, "cat": "communication", "en": "Reply", "ph": "/rɪˈplaɪ/", "zh": "回复", "type": "动词", "ex_en": "Please reply to my email.", "ex_zh": "请回复我的邮件。"}, {"id": 28, "cat": "communication", "en": "Question", "ph": "/ˈkwestʃən/", "zh": "问题", "type": "名词", "ex_en": "I have a question about this.", "ex_zh": "我对这个有个问题。"}, {"id": 29, "cat": "communication", "en": "Present", "ph": "/prɪˈzent/", "zh": "演示/呈现", "type": "动词", "ex_en": "I will present the results tomorrow.", "ex_zh": "我明天将展示结果。"}, {"id": 30, "cat": "time", "en": "Today", "ph": "/təˈdeɪ/", "zh": "今天", "type": "副词", "ex_en": "I will finish it today.", "ex_zh": "我今天会完成它。"}, {"id": 31, "cat": "time", "en": "Tomorrow", "ph": "/təˈmɒroʊ/", "zh": "明天", "type": "副词", "ex_en": "Let us meet tomorrow morning.", "ex_zh": "我们明天早上见面吧。"}, {"id": 32, "cat": "time", "en": "Yesterday", "ph": "/ˈjestərdeɪ/", "zh": "昨天", "type": "副词", "ex_en": "I sent the email yesterday.", "ex_zh": "我昨天发了邮件。"}, {"id": 33, "cat": "time", "en": "Urgent", "ph": "/ˈɜːrdʒənt/", "zh": "紧急的", "type": "形容词", "ex_en": "This is an urgent matter.", "ex_zh": "这是紧急事项。"}, {"id": 34, "cat": "time", "en": "Immediately", "ph": "/ɪˈmiːdiətli/", "zh": "立刻", "type": "副词", "ex_en": "Please respond immediately.", "ex_zh": "请立即回应。"}, {"id": 35, "cat": "time", "en": "Weekly", "ph": "/ˈwiːkli/", "zh": "每周", "type": "形容词", "ex_en": "We have weekly meetings.", "ex_zh": "我们每周开会。"}, {"id": 36, "cat": "time", "en": "Monthly", "ph": "/ˈmʌnθli/", "zh": "每月", "type": "形容词", "ex_en": "The report is due monthly.", "ex_zh": "报告每月提交一次。"}, {"id": 37, "cat": "time", "en": "Postpone", "ph": "/ˌpoʊstˈpoʊn/", "zh": "推迟", "type": "动词", "ex_en": "We need to postpone the meeting.", "ex_zh": "我们需要推迟会议。"}, {"id": 38, "cat": "email", "en": "Attachment", "ph": "/əˈtætʃmənt/", "zh": "附件", "type": "名词", "ex_en": "Please see the attachment.", "ex_zh": "请查看附件。"}, {"id": 39, "cat": "email", "en": "Forward", "ph": "/ˈfɔːrwərd/", "zh": "转发", "type": "动词", "ex_en": "I will forward this email to you.", "ex_zh": "我会把这封邮件转发给你。"}, {"id": 40, "cat": "email", "en": "Draft", "ph": "/drɑːft/", "zh": "草稿/起草", "type": "名词", "ex_en": "I drafted a proposal.", "ex_zh": "我起草了一份提案。"}, {"id": 41, "cat": "email", "en": "Document", "ph": "/ˈdɒkjumənt/", "zh": "文件/文档", "type": "名词", "ex_en": "Can you share the document?", "ex_zh": "能把文件分享给我吗？"}, {"id": 42, "cat": "email", "en": "Signature", "ph": "/ˈsɪɡnɪtʃər/", "zh": "签名", "type": "名词", "ex_en": "Please add your signature here.", "ex_zh": "请在这里签名。"}, {"id": 43, "cat": "email", "en": "Regarding", "ph": "/rɪˈɡɑːrdɪŋ/", "zh": "关于", "type": "介词", "ex_en": "Regarding your question...", "ex_zh": "关于你的问题……"}, {"id": 44, "cat": "email", "en": "Sincerely", "ph": "/sɪnˈsɪərli/", "zh": "诚挚地", "type": "副词", "ex_en": "Sincerely, John", "ex_zh": "此致，约翰"}, {"id": 45, "cat": "email", "en": "Summarize", "ph": "/ˈsʌməraɪz/", "zh": "总结", "type": "动词", "ex_en": "Please summarize the key points.", "ex_zh": "请总结要点。"}, {"id": 46, "cat": "numbers", "en": "Increase", "ph": "/ɪnˈkriːs/", "zh": "增加", "type": "动词", "ex_en": "Sales increased by 20 percent.", "ex_zh": "销售额增长了20%。"}, {"id": 47, "cat": "numbers", "en": "Decrease", "ph": "/dɪˈkriːs/", "zh": "减少", "type": "动词", "ex_en": "Costs decreased this quarter.", "ex_zh": "本季度成本降低了。"}, {"id": 48, "cat": "numbers", "en": "Estimate", "ph": "/ˈestɪmət/", "zh": "估计/预估", "type": "动词", "ex_en": "My estimate is about 3 days.", "ex_zh": "我预估大约需要3天。"}, {"id": 49, "cat": "numbers", "en": "Percentage", "ph": "/pərˈsentɪdʒ/", "zh": "百分比", "type": "名词", "ex_en": "What percentage is complete?", "ex_zh": "完成了百分之多少？"}, {"id": 50, "cat": "numbers", "en": "Total", "ph": "/ˈtoʊtl/", "zh": "总计", "type": "名词", "ex_en": "The total cost is 500 dollars.", "ex_zh": "总费用是500美元。"}, {"id": 51, "cat": "numbers", "en": "Average", "ph": "/ˈævərɪdʒ/", "zh": "平均", "type": "名词", "ex_en": "The average score is 85.", "ex_zh": "平均分是85分。"}, {"id": 52, "cat": "daily", "en": "Breakfast", "ph": "/ˈbrekfəst/", "zh": "早餐", "type": "名词", "ex_en": "I usually skip breakfast.", "ex_zh": "我通常不吃早餐。"}, {"id": 53, "cat": "daily", "en": "Lunch", "ph": "/lʌntʃ/", "zh": "午餐", "type": "名词", "ex_en": "Let us have lunch together.", "ex_zh": "我们一起吃午饭吧。"}, {"id": 54, "cat": "daily", "en": "Dinner", "ph": "/ˈdɪnər/", "zh": "晚餐", "type": "名词", "ex_en": "What are you having for dinner?", "ex_zh": "你晚餐吃什么？"}, {"id": 55, "cat": "daily", "en": "Traffic", "ph": "/ˈtræfɪk/", "zh": "交通/堵车", "type": "名词", "ex_en": "The traffic was terrible today.", "ex_zh": "今天堵车很严重。"}, {"id": 56, "cat": "daily", "en": "Weather", "ph": "/ˈweðər/", "zh": "天气", "type": "名词", "ex_en": "The weather is nice today.", "ex_zh": "今天天气不错。"}, {"id": 57, "cat": "daily", "en": "Tired", "ph": "/ˈtaɪərd/", "zh": "累了", "type": "形容词", "ex_en": "I am really tired today.", "ex_zh": "我今天真的很累。"}, {"id": 58, "cat": "daily", "en": "Busy", "ph": "/ˈbɪzi/", "zh": "忙碌的", "type": "形容词", "ex_en": "I am a bit busy right now.", "ex_zh": "我现在有点忙。"}, {"id": 59, "cat": "daily", "en": "Available", "ph": "/əˈveɪləbl/", "zh": "有空的", "type": "形容词", "ex_en": "Are you available this afternoon?", "ex_zh": "你今天下午有空吗？"}, {"id": 60, "cat": "daily", "en": "Help", "ph": "/help/", "zh": "帮助", "type": "动词", "ex_en": "Can you help me with this?", "ex_zh": "你能帮我处理这个吗？"}, {"id": 61, "cat": "daily", "en": "Problem", "ph": "/ˈprɒbləm/", "zh": "问题/麻烦", "type": "名词", "ex_en": "There is a problem with the system.", "ex_zh": "系统出了个问题。"}, {"id": 62, "cat": "daily", "en": "Solution", "ph": "/səˈluːʃən/", "zh": "解决方案", "type": "名词", "ex_en": "I found a solution.", "ex_zh": "我找到解决方法了。"}, {"id": 63, "cat": "daily", "en": "Important", "ph": "/ɪmˈpɔːrtənt/", "zh": "重要的", "type": "形容词", "ex_en": "This is very important.", "ex_zh": "这非常重要。"}, {"id": 64, "cat": "phrases", "en": "No problem", "ph": "/noʊ ˈprɒbləm/", "zh": "没问题", "type": "短语", "ex_en": "Can you do this? No problem!", "ex_zh": "你能做这个吗？没问题！"}, {"id": 65, "cat": "phrases", "en": "Of course", "ph": "/əv kɔːrs/", "zh": "当然", "type": "短语", "ex_en": "Of course, I will take care of it.", "ex_zh": "当然，我来处理。"}, {"id": 66, "cat": "phrases", "en": "I see", "ph": "/aɪ siː/", "zh": "我明白了", "type": "短语", "ex_en": "I see, thank you for explaining.", "ex_zh": "我明白了，谢谢你的解释。"}, {"id": 67, "cat": "phrases", "en": "Let me know", "ph": "/let miː noʊ/", "zh": "告诉我", "type": "短语", "ex_en": "Let me know if you need help.", "ex_zh": "如果需要帮助，告诉我。"}, {"id": 68, "cat": "phrases", "en": "Looking forward to", "ph": "/ˈlʊkɪŋ ˈfɔːrwərd tuː/", "zh": "期待", "type": "短语", "ex_en": "Looking forward to your reply.", "ex_zh": "期待您的回复。"}, {"id": 69, "cat": "phrases", "en": "ASAP", "ph": "/eɪ es eɪ piː/", "zh": "尽快", "type": "缩写", "ex_en": "Please reply ASAP.", "ex_zh": "请尽快回复。"}, {"id": 70, "cat": "phrases", "en": "By the way", "ph": "/baɪ ðə weɪ/", "zh": "顺便说一下", "type": "短语", "ex_en": "By the way, have you seen Mike?", "ex_zh": "顺便问一下，你见过Mike吗？"}, {"id": 71, "cat": "phrases", "en": "In other words", "ph": "/ɪn ˈʌðər wɜːrdz/", "zh": "换句话说", "type": "短语", "ex_en": "In other words, we need to restart.", "ex_zh": "换句话说，我们需要重新开始。"}, {"id": 72, "cat": "phrases", "en": "Make sense", "ph": "/meɪk sens/", "zh": "有道理", "type": "短语", "ex_en": "Does this make sense to you?", "ex_zh": "这对你来说说得通吗？"}, {"id": 73, "cat": "phrases", "en": "Keep in touch", "ph": "/kiːp ɪn tʌtʃ/", "zh": "保持联系", "type": "短语", "ex_en": "Let us keep in touch.", "ex_zh": "保持联系哦。"}, {"id": 74, "cat": "phrases", "en": "Get back to you", "ph": "/ɡet bæk tuː juː/", "zh": "稍后回复你", "type": "短语", "ex_en": "I will get back to you by tomorrow.", "ex_zh": "我明天前回复你。"}, {"id": 75, "cat": "phrases", "en": "On the other hand", "ph": "/ɒn ðə ˈʌðər hænd/", "zh": "另一方面", "type": "短语", "ex_en": "On the other hand, this saves time.", "ex_zh": "另一方面，这样可以节省时间。"}];
+
+
+var curCat = 'all';
+var curTab = 'list';
+var cardList = [];
+var cardIdx = 0;
+
+function sget(k) { try { return localStorage.getItem(k) || 'new'; } catch(e) { return 'new'; } }
+function sset(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
+function getCustom() { try { return JSON.parse(localStorage.getItem('custom') || '[]'); } catch(e) { return []; } }
+function setCustom(a) { try { localStorage.setItem('custom', JSON.stringify(a)); } catch(e) {} }
+
+// ── Progress ──
+function updateProgress() {
+  var list = curCat === 'all' ? WORDS : WORDS.filter(function(w) { return w.cat === curCat; });
+  var m = 0;
+  list.forEach(function(w) { if (sget('w' + w.id) === 'mastered') m++; });
+  document.getElementById('pf').style.width = (list.length ? m / list.length * 100 : 0) + '%';
+  document.getElementById('pt').textContent = m + '/' + list.length;
+}
+
+// ── List: toggle example ──
+document.getElementById('listView').addEventListener('click', function(e) {
+  var btn = e.target.closest('.wi-btn');
+  if (btn) {
+    e.stopPropagation();
+    var id = parseInt(btn.dataset.id);
+    var cur = sget('w' + id);
+    var next = cur === 'new' ? 'learning' : cur === 'learning' ? 'mastered' : 'new';
+    sset('w' + id, next);
+    var item = document.getElementById('li' + id);
+    item.classList.remove('mastered', 'learning');
+    if (next !== 'new') item.classList.add(next);
+    btn.textContent = next === 'mastered' ? '✓' : next === 'learning' ? '…' : '○';
+    updateProgress();
+    return;
+  }
+  var wi = e.target.closest('.wi');
+  if (wi) wi.classList.toggle('open');
+});
+
+// ── Category tabs ──
+document.getElementById('tabBar').addEventListener('click', function(e) {
+  var btn = e.target.closest('.tab');
+  if (!btn) return;
+  curCat = btn.dataset.cat;
+  document.querySelectorAll('.tab').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  document.querySelectorAll('.wi[data-cat]').forEach(function(el) {
+    el.style.display = (curCat === 'all' || el.dataset.cat === curCat) ? '' : 'none';
+  });
+  if (curTab === 'card') { cardIdx = 0; buildCardList(); showCard(); }
+  updateProgress();
+});
+
+// ── Bottom nav ──
+document.getElementById('bniList').addEventListener('click', function() {
+  curTab = 'list';
+  document.getElementById('listView').style.display = '';
+  document.getElementById('cardView').classList.remove('show');
+  document.getElementById('bniList').classList.add('active');
+  document.getElementById('bniCard').classList.remove('active');
+  updateProgress();
+});
+
+document.getElementById('bniCard').addEventListener('click', function() {
+  curTab = 'card';
+  document.getElementById('listView').style.display = 'none';
+  document.getElementById('cardView').classList.add('show');
+  document.getElementById('bniList').classList.remove('active');
+  document.getElementById('bniCard').classList.add('active');
+  cardIdx = 0;
+  buildCardList();
+  showCard();
+  updateProgress();
+});
+
+// ── Card mode ──
+function buildCardList() {
+  cardList = curCat === 'all' ? WORDS.slice() : WORDS.filter(function(w) { return w.cat === curCat; });
+  for (var i = cardList.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = cardList[i]; cardList[i] = cardList[j]; cardList[j] = t;
+  }
+}
+
+function showCard() {
+  if (!cardList.length) return;
+  var idx = ((cardIdx % cardList.length) + cardList.length) % cardList.length;
+  var w = cardList[idx];
+  document.getElementById('cardCounter').textContent = (idx + 1) + ' / ' + cardList.length;
+  document.getElementById('cEn').textContent = w.en;
+  document.getElementById('cPh').textContent = w.ph;
+  document.getElementById('cType').textContent = w.type;
+  document.getElementById('cZh').textContent = w.zh;
+  document.getElementById('cEnSm').textContent = w.en;
+  document.getElementById('cExEn').textContent = w.ex_en;
+  document.getElementById('cExZh').textContent = w.ex_zh;
+  document.getElementById('cardWrap').classList.remove('flipped');
+}
+
+document.getElementById('cardWrap').addEventListener('click', function() {
+  document.getElementById('cardWrap').classList.toggle('flipped');
+});
+
+document.getElementById('btnSkip').addEventListener('click', function() {
+  cardIdx++; showCard();
+});
+
+document.getElementById('btnNext').addEventListener('click', function() {
+  cardIdx++; showCard();
+});
+
+document.getElementById('btnPrev').addEventListener('click', function() {
+  cardIdx--; showCard();
+});
+
+document.getElementById('btnLearning').addEventListener('click', function() {
+  var idx = ((cardIdx % cardList.length) + cardList.length) % cardList.length;
+  var w = cardList[idx];
+  sset('w' + w.id, 'learning');
+  var item = document.getElementById('li' + w.id);
+  if (item) { item.classList.remove('mastered', 'learning'); item.classList.add('learning'); document.getElementById('btn' + w.id).textContent = '…'; }
+  cardIdx++; showCard(); updateProgress();
+});
+
+document.getElementById('btnMastered').addEventListener('click', function() {
+  var idx = ((cardIdx % cardList.length) + cardList.length) % cardList.length;
+  var w = cardList[idx];
+  sset('w' + w.id, 'mastered');
+  var item = document.getElementById('li' + w.id);
+  if (item) { item.classList.remove('mastered', 'learning'); item.classList.add('mastered'); document.getElementById('btn' + w.id).textContent = '✓'; }
+  cardIdx++; showCard(); updateProgress();
+});
+
+// swipe
+(function() {
+  var el = document.getElementById('cardView');
+  var sx = 0;
+  el.addEventListener('touchstart', function(e) { sx = e.touches[0].clientX; }, {passive: true});
+  el.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - sx;
+    if (Math.abs(dx) > 50) { dx > 0 ? cardIdx-- : cardIdx++; showCard(); }
+  });
+})();
+
+// ── Add word panel ──
+document.getElementById('fabBtn').addEventListener('click', function() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('iEn').focus();
+});
+
+document.getElementById('closePanel').addEventListener('click', function() {
+  document.getElementById('overlay').classList.remove('open');
+});
+
+document.getElementById('overlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+document.getElementById('saveBtn').addEventListener('click', function() {
+  var en = document.getElementById('iEn').value.trim();
+  var zh = document.getElementById('iZh').value.trim();
+  if (!en || !zh) { alert('英文和中文是必填的'); return; }
+  var words = getCustom();
+  words.push({
+    id: 'c' + Date.now(),
+    en: en,
+    ph: document.getElementById('iPh').value.trim(),
+    zh: zh,
+    type: document.getElementById('iType').value,
+    ex_en: document.getElementById('iExEn').value.trim(),
+    ex_zh: document.getElementById('iExZh').value.trim()
+  });
+  setCustom(words);
+  ['iEn','iPh','iZh','iExEn','iExZh'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('overlay').classList.remove('open');
+  renderMyWords();
+  var t = document.createElement('div');
+  t.textContent = '已保存：' + en;
+  t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#27ae60;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:999;pointer-events:none';
+  document.body.appendChild(t);
+  setTimeout(function() { t.remove(); }, 2000);
+});
+
+function renderMyWords() {
+  var words = getCustom();
+  var el = document.getElementById('myWords');
+  if (!words.length) {
+    el.innerHTML = '<div class="empty-tip">还没有自定义单词，点右下角 + 添加</div>';
+    return;
+  }
+  var html = '';
+  words.slice().reverse().forEach(function(w) {
+    var s = sget('cs' + w.id);
+    var cls = s !== 'new' ? ' ' + s : '';
+    var btn = s === 'mastered' ? '✓' : s === 'learning' ? '…' : '○';
+    html += '<div class="wi' + cls + '" data-cid="' + w.id + '">' +
+      '<div class="wi-top"><div class="wi-l">' +
+      '<div class="wi-en">' + w.en + '</div>' +
+      (w.ph ? '<div class="wi-ph">' + w.ph + '</div>' : '') +
+      '<div class="wi-zh">' + w.zh + '</div>' +
+      '</div><div class="wi-r"><span class="wi-badge">' + w.type + '</span>' +
+      '<button class="wi-btn cbtn" data-cid="' + w.id + '">' + btn + '</button>' +
+      '<button class="delbtn" data-cid="' + w.id + '" style="background:transparent;border:none;color:#333;font-size:16px;cursor:pointer">🗑</button>' +
+      '</div></div>' +
+      (w.ex_en ? '<div class="wi-ex"><div class="wi-ex-en">📝 ' + w.ex_en + '</div>' +
+        (w.ex_zh ? '<div class="wi-ex-zh">' + w.ex_zh + '</div>' : '') + '</div>' : '') +
+      '</div>';
+  });
+  el.innerHTML = html;
+}
+
+document.getElementById('myWords').addEventListener('click', function(e) {
+  var cbtn = e.target.closest('.cbtn');
+  if (cbtn) {
+    e.stopPropagation();
+    var id = cbtn.dataset.cid;
+    var cur = sget('cs' + id);
+    var next = cur === 'new' ? 'learning' : cur === 'learning' ? 'mastered' : 'new';
+    sset('cs' + id, next);
+    renderMyWords();
+    return;
+  }
+  var delbtn = e.target.closest('.delbtn');
+  if (delbtn) {
+    e.stopPropagation();
+    if (!confirm('删除这个单词？')) return;
+    var id = delbtn.dataset.cid;
+    setCustom(getCustom().filter(function(w) { return w.id !== id; }));
+    renderMyWords();
+    return;
+  }
+  var wi = e.target.closest('.wi');
+  if (wi) wi.classList.toggle('open');
+});
+
+// ── Init ──
+(function() {
+  WORDS.forEach(function(w) {
+    var s = sget('w' + w.id);
+    if (s === 'new') return;
+    var item = document.getElementById('li' + w.id);
+    if (item) {
+      item.classList.add(s);
+      document.getElementById('btn' + w.id).textContent = s === 'mastered' ? '✓' : '…';
+    }
+  });
+  renderMyWords();
+  buildCardList();
+  updateProgress();
+})();
+</script>
+</body>
+</html>
