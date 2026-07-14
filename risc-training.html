@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RISC Training — 术语速查</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3350;
+    --accent: #4f7dff;
+    --accent2: #7c5cfc;
+    --green: #2ecc8e;
+    --orange: #f0a04b;
+    --red: #f06b6b;
+    --purple: #a78bfa;
+    --text: #e2e6f3;
+    --muted: #7a82a8;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a1d27 0%, #0d1033 100%); border-bottom: 1px solid var(--border); padding: 24px 32px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .header-title { flex: 1; }
+  .header-title h1 { font-size: 22px; font-weight: 700; background: linear-gradient(90deg, #4f7dff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header-title p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .badge { background: var(--accent); color: white; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+
+  /* Controls */
+  .controls { padding: 20px 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .search-box { flex: 1; min-width: 200px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; color: var(--text); font-size: 14px; outline: none; transition: border 0.2s; }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--muted); }
+  .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tab { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 13px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .tab:hover, .tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .mode-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .mode-btn.active { background: var(--accent2); border-color: var(--accent2); color: white; }
+
+  /* Stats bar */
+  .stats-bar { padding: 0 32px 16px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* Grid */
+  .grid { padding: 0 32px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+
+  /* Card */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: transform 0.15s, box-shadow 0.15s; cursor: default; position: relative; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(79,125,255,0.12); }
+  .card-header { padding: 14px 16px 10px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .cat-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .cat-Metrics { background: rgba(46,204,142,0.15); color: var(--green); }
+  .cat-Terms { background: rgba(79,125,255,0.15); color: var(--accent); }
+  .cat-Tools { background: rgba(240,160,75,0.15); color: var(--orange); }
+  .cat-ASIN { background: rgba(167,139,250,0.15); color: var(--purple); }
+  .card-term { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.3; }
+  .card-body { padding: 14px 16px; }
+  .def-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; }
+  .def-en { font-size: 13px; line-height: 1.6; color: #b0bcd8; margin-bottom: 12px; }
+  .def-zh { font-size: 13px; line-height: 1.6; color: var(--text); }
+  .card-abbr { font-size: 11px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; color: var(--muted); white-space: nowrap; }
+
+  /* Flip card mode */
+  .flip-mode .card { perspective: 1000px; background: none; border: none; min-height: 200px; }
+  .flip-mode .card-inner { position: relative; width: 100%; height: 100%; min-height: 200px; transform-style: preserve-3d; transition: transform 0.5s; cursor: pointer; }
+  .flip-mode .card.flipped .card-inner { transform: rotateY(180deg); }
+  .flip-mode .card-front, .flip-mode .card-back { position: absolute; width: 100%; min-height: 200px; backface-visibility: hidden; border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+  .flip-mode .card-front { background: var(--surface); border: 1px solid var(--border); align-items: center; text-align: center; }
+  .flip-mode .card-back { background: var(--surface2); border: 1px solid var(--accent); transform: rotateY(180deg); }
+  .flip-mode .card-front .card-term { font-size: 17px; font-weight: 700; }
+  .flip-mode .card-back .def-en { font-size: 12px; }
+  .flip-mode .card-back .def-zh { font-size: 13px; }
+  .flip-hint { font-size: 11px; color: var(--muted); margin-top: auto; padding-top: 8px; text-align: center; }
+
+  /* Empty */
+  .empty { grid-column: 1/-1; text-align: center; padding: 60px; color: var(--muted); }
+
+  /* Useful links section */
+  .section-title { padding: 0 32px 12px; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
+  .links-grid { padding: 0 32px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .link-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; text-decoration: none; color: var(--text); transition: all 0.2s; display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .link-card:hover { border-color: var(--accent); color: var(--accent); transform: translateX(2px); }
+  .link-card::before { content: '→'; color: var(--accent); font-weight: bold; flex-shrink: 0; }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    .header, .controls, .stats-bar, .grid, .links-grid, .section-title { padding-left: 16px; padding-right: 16px; }
+    .grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">
+    <h1>RISC Training — 术语速查</h1>
+    <p>Proactive Compliance Fundamentals | 63 个核心术语 · 4 个分类</p>
+  </div>
+  <span class="badge">RISC</span>
+</div>
+
+<div class="controls">
+  <input class="search-box" type="text" id="search" placeholder="搜索术语、英文缩写或中文...">
+  <div class="filter-tabs">
+    <div class="tab active" onclick="filter('all',this)">全部 <span id="cnt-all"></span></div>
+    <div class="tab" onclick="filter('Metrics',this)">📊 Metrics</div>
+    <div class="tab" onclick="filter('Terms',this)">📋 Terms</div>
+    <div class="tab" onclick="filter('Tools',this)">🔧 Tools</div>
+    <div class="tab" onclick="filter('ASIN Status',this)">🏷️ ASIN Status</div>
+  </div>
+  <button class="mode-btn" id="flipBtn" onclick="toggleFlipMode()">🃏 翻牌模式</button>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-dot" style="background:var(--green)"></div> Metrics: 3</div>
+  <div class="stat"><div class="stat-dot" style="background:var(--accent)"></div> Terms: 43</div>
+  <div class="stat"><div class="stat-dot" style="background:var(--orange)"></div> Tools: 9</div>
+  <div class="stat"><div class="stat-dot" style="background:var(--purple)"></div> ASIN Status: 5</div>
+</div>
+
+<div class="grid" id="cardGrid"></div>
+
+<div class="section-title" id="linksTitle">🔗 常用链接</div>
+<div class="links-grid" id="linksGrid"></div>
+
+<script>
+const terms = [
+  {cat:"Metrics",term:"DPMO",full:"Defects Per Million Opportunities",en:"A quality metric expressing the number of defects that would occur if there were one million chances for error; lower is better.",zh:"每百万机会缺陷数 — 质量指标，一百万次出错机会中出现的缺陷数量；数值越低越好。"},
+  {cat:"Metrics",term:"TPH",full:"Throughput Per Hour",en:"The number of units/cases processed per labor hour. Measures operational productivity and efficiency. Higher is better.",zh:"每小时处理量。每工时处理的单位/案例数量，衡量运营生产力和效率，数值越高越好。"},
+  {cat:"Metrics",term:"UT",full:"Utilization",en:"The percentage of available/paid time an associate spends on productive, on-task work.",zh:"利用率 — 员工将可用/带薪时间用于高效在岗工作的百分比。"},
+  {cat:"Terms",term:"SP",full:"Selling Partner",en:"A collective term for anyone selling on Amazon — includes both third-party Sellers and first-party Vendors.",zh:"销售伙伴 — 在亚马逊上销售的所有方的统称，包括第三方卖家（Seller）和第一方供应商（Vendor）。"},
+  {cat:"Terms",term:"Seller",full:"",en:"A third-party (3P) merchant who lists and sells products directly to customers on the Amazon marketplace.",zh:"卖家 — 在亚马逊平台上直接向客户上架并销售商品的第三方（3P）商家。"},
+  {cat:"Terms",term:"Seller ID",full:"",en:"An alphanumeric code representing a single relationship between Amazon and a seller. Can be encrypted for security.",zh:"卖家ID — 代表亚马逊与卖家之间单一关系的字母数字代码，出于安全原因可加密。"},
+  {cat:"Terms",term:"Vendor",full:"",en:"A first-party (1P) supplier that sells products wholesale to Amazon, which then resells them to customers.",zh:"供应商 — 以批发方式将商品出售给亚马逊、再由亚马逊转售给客户的第一方（1P）供货方。"},
+  {cat:"Terms",term:"Vendor Code",full:"",en:"An alphanumeric code representing a single relationship between Amazon and a vendor.",zh:"供应商代码 — 代表亚马逊与供应商之间单一关系的字母数字代码。"},
+  {cat:"Terms",term:"CID",full:"Customer ID / Contributor ID",en:"A globally unique identifier used to track Amazon customers and their associated information.",zh:"客户ID — 全球唯一标识符，用于跟踪亚马逊客户及其相关信息。"},
+  {cat:"Terms",term:"MP",full:"Store / Marketplace ID",en:"A place where merchants offer goods and customers place orders. A globally unique ID identifies a marketplace.",zh:"商店/市场ID — 商家提供商品销售、客户下订单的场所，全球唯一ID标识一个市场。"},
+  {cat:"Terms",term:"ASIN",full:"Amazon Standard Identification Number",en:"A unique 10-character alphanumeric code identifying a product in Amazon's catalog.",zh:"亚马逊标准识别码 — 由10位字母数字组成的唯一代码，用于在亚马逊目录中识别一个商品。"},
+  {cat:"Terms",term:"TP",full:"True Positive",en:"An ASIN correctly classified as restricted/non-compliant (correctly flagged).",zh:"真阳性 — 被正确分类为受限/不合规的ASIN（正确标记）。"},
+  {cat:"Terms",term:"FP",full:"False Positive",en:"An ASIN incorrectly flagged as restricted when it is actually compliant.",zh:"假阳性 — 被错误标记为受限/不合规的ASIN（实际合规但被误判）。"},
+  {cat:"Terms",term:"TN",full:"True Negative",en:"An ASIN correctly classified as compliant/not restricted.",zh:"真阴性 — 被正确分类为合规/不受限的ASIN。"},
+  {cat:"Terms",term:"FN",full:"False Negative",en:"An ASIN that should have been flagged as non-compliant but was missed.",zh:"假阴性 — 应该被标记为不合规但被遗漏的ASIN（漏网之鱼）。"},
+  {cat:"Terms",term:"PT / PRC",full:"Product Types / Product Risk Category",en:"A structural definition of an item categorizing products based on regulatory risk and compliance requirements.",zh:"产品类型/产品风险类别 — 根据监管风险和合规要求对产品进行的结构性分类定义。"},
+  {cat:"Terms",term:"Path PT/PRC",full:"",en:"Product Types with a defined compliance pathway — sellers can submit specific documents/certifications to get ASINs reinstated.",zh:"有申诉路径的产品类型 — 有明确合规路径，卖家可提交特定文件或认证证明合规并恢复ASIN。"},
+  {cat:"Terms",term:"No Path PT/PRC",full:"",en:"Product Types with NO defined compliance pathway — the product is outright prohibited and cannot be reinstated.",zh:"无申诉路径的产品类型 — 没有明确合规路径，产品被完全禁止，无法提交文件恢复。"},
+  {cat:"Terms",term:"Prohibited Products",full:"",en:"Products that cannot be sold because they are illegal, illegally marketed, or violate Amazon policy (e.g., guns, tobacco).",zh:"禁售商品 — 因违法、非法营销或违反亚马逊政策而不能销售的商品（如枪支、烟草）。"},
+  {cat:"Terms",term:"Restricted Products",full:"",en:"Products that may be sold subject to certain conditions, such as geographic restrictions (e.g., pepper spray).",zh:"受限商品 — 在满足特定条件下方可销售的商品，例如地域限制（如胡椒喷雾仅限特定地区）。"},
+  {cat:"Terms",term:"Regulated Products",full:"",en:"Products that must meet certain regulatory requirements to be sold, such as specific disclosures on the detail page.",zh:"受监管商品 — 必须满足特定监管要求才能销售的商品，例如详情页必须包含特定披露信息。"},
+  {cat:"Terms",term:"Rule / Class",full:"",en:"Syntax language classes used to identify ASINs based on compliance requirements, covering prohibited, regulated, and restricted products.",zh:"规则/类别 — Syntax language classes，根据合规要求识别ASIN，涵盖禁售、受监管和受限商品。"},
+  {cat:"Terms",term:"Rationale",full:"",en:"Specific details about products that should be members of a class, plus info on items OK for sale. Based on legal research and regulatory discussions.",zh:"规则依据 — 包含应归入某类别商品的具体细节及可销售商品信息，基于法律研究和与监管方讨论得出。"},
+  {cat:"Terms",term:"GRC",full:"Governance, Risk, and Compliance",en:"Internal database (grc.amazon.com) storing documentation on SOX-related controls, processes, applications, and reviews (e.g., SOP).",zh:"GRC 工具 — 内部数据库，存储与SOX相关的控制、流程、应用程序和审查文档（如产品类型SOP）。"},
+  {cat:"Terms",term:"SOP",full:"Standard Operation Procedure",en:"A set of step-by-step instructions compiled to help workers carry out routine operations consistently and efficiently.",zh:"标准作业程序 — 由组织编制的分步说明，帮助员工一致且高效地执行日常操作。"},
+  {cat:"Terms",term:"Reviewer",full:"",en:"An operations associate who reviews ASINs to determine compliance with Amazon policies, classifying them as TP or FP.",zh:"审核员 — 审查ASIN以确定是否符合亚马逊政策的运营人员，将ASIN分类为TP或FP。"},
+  {cat:"Terms",term:"Suppression / Restriction / Yank",full:"",en:"Blocking/removal of an ASIN from the Amazon catalog because it does not meet requirements. The product is pulled off-site and the seller is notified.",zh:"下架/限制/撤除 — 因ASIN不符合亚马逊要求而将其从目录中屏蔽/移除，产品撤下并通知卖家。"},
+  {cat:"Terms",term:"Reinstate / Un-yank",full:"",en:"Restoring a previously suppressed/restricted ASIN back to active status, typically after the seller provides compliant documentation or successfully appeals.",zh:"恢复上架/解除撤除 — 将之前被下架的ASIN恢复为活跃状态，通常在卖家提供合规文件或成功申诉后进行。"},
+  {cat:"Terms",term:"Pre-approved Brand / SP",full:"",en:"A brand or Selling Partner vetted and cleared in advance, so its items bypass or receive expedited review.",zh:"预先批准的品牌/销售伙伴 — 已提前经过审核并获批，其商品可跳过或享受加速审核。"},
+  {cat:"Terms",term:"Grace Period",full:"",en:"A defined window of time granted before an action takes effect, allowing the SP time to comply.",zh:"宽限期 — 在措施生效之前给予的规定时间窗口，让销售伙伴有时间进行整改。"},
+  {cat:"Terms",term:"Case / Work Item",full:"",en:"A single unit of work assigned for review or action — one item, task, or ticket handled by an associate.",zh:"工作单元 — 分配用于审核或处理的单个任务/工单，由员工处理。"},
+  {cat:"Terms",term:"Case Status",full:"",en:"The current state of a case in its lifecycle (e.g., open, pending, in progress, resolved, closed).",zh:"Case状态 — Case在生命周期中的当前状态（如待处理、进行中、已解决、已关闭）。"},
+  {cat:"Terms",term:"Queue",full:"",en:"A holding list of cases/work items waiting to be picked up and worked, often prioritized by rules.",zh:"队列 — 等待被领取和处理的Case/工作项暂存列表，通常按规则排定优先级。"},
+  {cat:"Terms",term:"SLA",full:"Service Level Agreement",en:"A committed standard for how quickly or to what quality work must be completed (e.g., resolve within X hours).",zh:"服务水平协议 — 对工作完成速度或质量的承诺标准（如：在X小时内解决）。"},
+  {cat:"Terms",term:"FT SLA",full:"First Touch SLA",en:"The target time within which a case must first be acted upon after it arrives, regardless of full resolution.",zh:"首次响应SLA — Case生成后必须首次处理的目标时间，与是否完全解决无关。"},
+  {cat:"Terms",term:"Calendar Days",full:"",en:"Counting elapsed days including weekends and holidays.",zh:"日历日 — 按经过的自然天数计算，包含周末和节假日。"},
+  {cat:"Terms",term:"Business Days",full:"",en:"Counting only working days, excluding weekends and public holidays.",zh:"工作日 — 仅计算工作日，不含周末和公众假期。"},
+  {cat:"Terms",term:"TAT",full:"Turn Around Time",en:"The total elapsed time from when a case is received to when it is fully resolved/completed.",zh:"周转时间 — 从收到案件到完全解决所经过的总时间。"},
+  {cat:"Terms",term:"GMS",full:"Gross Merchandise Sales",en:"The total value of merchandise sold over a given period, used to gauge business/seller scale.",zh:"商品交易总额 — 给定期间内售出商品的总价值，用于衡量业务/卖家规模。"},
+  {cat:"Terms",term:"HVL",full:"High Valued Listings",en:"ASINs with high sales volume or high GMS value that receive priority handling due to their significant business impact.",zh:"高价值商品（HVL）— 销售量高或GMS价值高的ASIN，因业务影响显著而获得优先处理。"},
+  {cat:"Terms",term:"HGMS",full:"High GMS",en:"A Selling Partner or ASIN with high sales volume/value, typically higher-priority/higher-impact.",zh:"高商品交易额 — 销售量/销售额很高的销售伙伴或ASIN，通常优先级更高、影响更大。"},
+  {cat:"Terms",term:"AWAS",full:"Active With Active Sales",en:"ASINs where Trailing 4 Weeks GMS > 0 (i.e., the product has recent sales activity).",zh:"有活跃销售的活跃商品 — 过去4周GMS > 0的ASIN（即该商品近期有销售活动）。"},
+  {cat:"Terms",term:"Non-AWAS",full:"",en:"ASINs with no active sales in the trailing 4-week period.",zh:"非AWAS — 过去4周内没有活跃销售的ASIN。"},
+  {cat:"Terms",term:"Deadwood",full:"",en:"ASINs with the lowest GMS/GV for the last 12 months that were picked and suppressed for document validation.",zh:"过去12个月GMS与GV最低、被挑选出来并下架以进行文件验证的ASIN（死库存）。"},
+  {cat:"Terms",term:"Non-Deadwood",full:"",en:"Active catalog ASINs that are newly added or currently listed; ensures newly added items are assessed and documents validated.",zh:"新添加或当前在售的活跃目录ASIN，确保所有新添加的商品都得到评估并完成文件验证。"},
+  {cat:"Terms",term:"Miss-linked ASIN",full:"",en:"An ASIN that shows different information on the detail page vs the original URL, which can influence product classification.",zh:"错误关联的ASIN — 详情页显示的信息与原始URL信息不一致的ASIN，可能影响产品分类。"},
+  {cat:"Tools",term:"DP",full:"Detail Page",en:"The customer-facing Amazon product page for an ASIN, showing title, images, bullets, description, and attributes.",zh:"详情页 — ASIN面向客户的亚马逊商品页面，展示标题、图片、要点、描述和属性。"},
+  {cat:"Tools",term:"CSI",full:"Crime Scene Investigation",en:"A tool to view all different attributes present for an ASIN and the text value of each attribute.",zh:"用于查看某个ASIN所有不同属性及每个属性文本值的工具。"},
+  {cat:"Tools",term:"MC",full:"Media Central",en:"Amazon's internal media/asset management tool for viewing and managing images and media associated with products/ASINs.",zh:"亚马逊内部媒体/资产管理工具，用于查看和管理与商品/ASIN相关的图片和媒体。"},
+  {cat:"Tools",term:"CSI Time Machine",full:"",en:"A tool for viewing the historical state of an ASIN's CSI attribute data — lets reviewers see what attributes looked like at an earlier point in time.",zh:"用于查看某个ASIN的CSI属性数据历史状态的工具，让审核员能看到商品属性在较早时间点的样子（如调查错误关联ASIN）。"},
+  {cat:"Tools",term:"C-ops Assistant",full:"Compliance Operations Assistant",en:"A Compliance Operations assistant that supports reviewers through day-to-day case-handling workflow with guidance, automation, or productivity aids.",zh:"合规运营助手 — 通过指引、自动化或效率辅助支持审核员日常案件处理流程的工具。"},
+  {cat:"Tools",term:"Tamper Monkey",full:"",en:"A browser extension (userscript manager) that runs custom JavaScript on web pages, used to add helper functions or automation to internal tools like CSI.",zh:"油猴子 — 浏览器扩展（用户脚本管理器），可在网页上运行自定义JS，为CSI等内部工具添加辅助功能和自动化。"},
+  {cat:"Tools",term:"Query Generator",full:"",en:"A tool that builds structured data queries (e.g., for pulling ASIN/case datasets) without writing raw SQL.",zh:"查询生成器 — 无需编写SQL即可构建结构化数据查询的工具，帮助运营用户生成搜索或报表所需查询。"},
+  {cat:"Tools",term:"CRISP",full:"",en:"ASIN validation tool for: (1) catalog search via queries, (2) displaying attributes for queried ASINs, (3) marking ASINs by category (local only).",zh:"ASIN查看工具，用途：(1) 通过查询搜索ASIN；(2) 显示ASIN选定属性；(3) 将ASIN分类标记（仅本地）。"},
+  {cat:"Tools",term:"Paragon",full:"",en:"Case management platform used by operations teams to handle compliance cases. Available in NA, EU, and FE regions.",zh:"合规案件管理平台，运营团队用于处理合规案件。分NA、EU、FE三个区域。"},
+  {cat:"ASIN Status",term:"Merge",full:"",en:"The ASIN was non-discoverable because it was merged into another ASIN.",zh:"合并 — ASIN因被合并进另一个ASIN而变为不可发现（Non-discoverable）。"},
+  {cat:"ASIN Status",term:"Tombstoned",full:"",en:"An ASIN that is no longer active and no longer indexed by search because it has no active contributions, making it non-discoverable while inventory may still exist in FCs.",zh:"墓碑化ASIN — 因无任何活跃贡献而变为非活跃、不被搜索索引、对客户不可见的ASIN，库存可能仍存在于履行中心。"},
+  {cat:"ASIN Status",term:"In-scope blocker for UPSC",full:"",en:"ASIN is suppressed by UPSC.",zh:"ASIN由UPSC下架。"},
+  {cat:"ASIN Status",term:"OOS blocker for UPSC",full:"",en:"ASIN is suppressed by other teams (Out-Of-Scope blocker).",zh:"ASIN由其他团队下架（非UPSC范围内的拦截）。"},
+  {cat:"ASIN Status",term:"Parent / Child ASIN",full:"",en:"Parent ASIN is non-purchasable by design — serves only as a placeholder to group child variations together (variation_parent in CSI).",zh:"母ASIN与子ASIN — 母ASIN不可购买，仅作为占位符将子变体组合在一起（CSI中显示为variation_parent）。"},
+];
+
+const links = [
+  {name:"RISC Wiki", url:"https://w.amazon.com/bin/view/RISC_WIKI"},
+  {name:"Quick Links for New Hires", url:"https://w.amazon.com/bin/view/RISC/NewJoiners/#History"},
+  {name:"Acronym Central", url:"https://w.amazon.com/index.php/Acronym_Central"},
+  {name:"CSI (Crime Scene Investigation)", url:"https://csi.amazon.com/view"},
+  {name:"MC (Media Central)", url:"https://console.harmony.a2z.com/media-central/product-images"},
+  {name:"CSI Time Machine", url:"https://timemachine.amazon.com/index.html"},
+  {name:"C-ops Assistant", url:"https://w.amazon.com/bin/view/CORS/Engineering/Tools/Assistant/UserDocumentation/"},
+  {name:"Tamper Monkey", url:"https://www.tampermonkey.net/"},
+  {name:"Query Generator", url:"https://ssa-central.aka.amazon.com/Query_Generator/v2"},
+  {name:"CRISP", url:"https://crisp.cors.amazon.dev/"},
+  {name:"Paragon NA", url:"https://paragon-na.amazon.com/hz/lobby"},
+  {name:"Paragon EU", url:"https://paragon-eu.amazon.com/hz/lobby"},
+  {name:"Paragon FE", url:"https://paragon-fe.amazon.com/hz/lobby"},
+  {name:"Medaan", url:"https://na.crs.hs3c.a2z.com/home"},
+  {name:"Yoda", url:"https://yoda.amazon.dev/home"},
+  {name:"PA Seller Appeal SOP (NA & APAC)", url:"https://policy.a2z.com/docs/92300/publication"},
+  {name:"PA Doc Review SOP (NA)", url:"https://policy.a2z.com/docs/670553/publication"},
+  {name:"PA Toy PT SOP (NA, IN, MEA)", url:"https://policy.a2z.com/docs/691736/publication"},
+  {name:"UPSC Seller Appeal (WW)", url:"https://policy.a2z.com/docs/608937/publication"},
+  {name:"UPSC Doc Review (JP)", url:"https://policy.a2z.com/docs/74371/publication"},
+  {name:"UPSC PT SOP List (JP)", url:"https://yoda.amazon.dev/content/amzn1.yoda.content.8lmyzepbp0laoq7isn1h/view"},
+];
+
+let currentFilter = 'all';
+let flipMode = false;
+
+function getCatClass(cat) {
+  if (cat === 'Metrics') return 'cat-Metrics';
+  if (cat === 'Terms') return 'cat-Terms';
+  if (cat === 'Tools') return 'cat-Tools';
+  return 'cat-ASIN';
+}
+
+function getCatEmoji(cat) {
+  if (cat === 'Metrics') return '📊';
+  if (cat === 'Terms') return '📋';
+  if (cat === 'Tools') return '🔧';
+  return '🏷️';
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const grid = document.getElementById('cardGrid');
+  grid.innerHTML = '';
+
+  if (flipMode) grid.classList.add('flip-mode');
+  else grid.classList.remove('flip-mode');
+
+  const filtered = terms.filter(t => {
+    const matchCat = currentFilter === 'all' || t.cat === currentFilter;
+    const matchQ = !q || t.term.toLowerCase().includes(q) || t.full.toLowerCase().includes(q) || t.en.toLowerCase().includes(q) || t.zh.includes(q);
+    return matchCat && matchQ;
+  });
+
+  document.getElementById('cnt-all').textContent = `(${terms.length})`;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty">没有找到匹配的术语 😕</div>';
+    return;
+  }
+
+  filtered.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const abbr = t.full ? `<span class="card-abbr">${t.full}</span>` : '';
+
+    if (flipMode) {
+      card.innerHTML = `
+        <div class="card-inner">
+          <div class="card-front">
+            <span class="cat-badge ${getCatClass(t.cat)}">${getCatEmoji(t.cat)} ${t.cat}</span>
+            <div style="height:16px"></div>
+            <div class="card-term">${t.term}</div>
+            ${abbr}
+            <div class="flip-hint">点击翻转查看释义</div>
+          </div>
+          <div class="card-back">
+            <div class="def-label">English</div>
+            <div class="def-en">${t.en}</div>
+            <div class="def-label">中文</div>
+            <div class="def-zh">${t.zh}</div>
+          </div>
+        </div>`;
+      card.addEventListener('click', () => card.classList.toggle('flipped'));
+    } else {
+      card.innerHTML = `
+        <div class="card-header">
+          <span class="cat-badge ${getCatClass(t.cat)}">${getCatEmoji(t.cat)} ${t.cat}</span>
+          <span class="card-term">${t.term}</span>
+          ${abbr}
+        </div>
+        <div class="card-body">
+          <div class="def-label">English</div>
+          <div class="def-en">${t.en}</div>
+          <div class="def-label">中文释义</div>
+          <div class="def-zh">${t.zh}</div>
+        </div>`;
+    }
+    grid.appendChild(card);
+  });
+}
+
+function filter(cat, el) {
+  currentFilter = cat;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function toggleFlipMode() {
+  flipMode = !flipMode;
+  const btn = document.getElementById('flipBtn');
+  btn.classList.toggle('active', flipMode);
+  btn.textContent = flipMode ? '📖 普通模式' : '🃏 翻牌模式';
+  render();
+}
+
+document.getElementById('search').addEventListener('input', render);
+
+// Render links
+const linksGrid = document.getElementById('linksGrid');
+links.forEach(l => {
+  const a = document.createElement('a');
+  a.className = 'link-card';
+  a.href = l.url;
+  a.target = '_blank';
+  a.textContent = l.name;
+  linksGrid.appendChild(a);
+});
+
+render();
+</script>
+</body>
+</html>
